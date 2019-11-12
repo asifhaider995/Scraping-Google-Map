@@ -59,11 +59,11 @@ def scrape_gm(api, src, dest, freq, duration):
 
 
 def main():
-    api_key = 'AIzaSyAAZKt9-jZ8iSKCic4ksUoLxBuS2Sp522w'
-    origin = '23.780683,90.421002'
-    destination = '23.782497,90.416728'
-    f = 8  # int(input('Enter Frequency in minutes: '))
-    d = 1.5  # int(input('How long to scrape in hours: '))
+    api_key = input("Enter API key: ")
+    origin = input("Enter Origin co-ordinates: ")
+    destination = intput("Enter Origin co-ordinates: ")
+    f = int(input('Enter Frequency in minutes: '))
+    d = int(input('How long to scrape in hours: '))
     scrape_gm(api_key, origin, destination, f, d)
 
 
