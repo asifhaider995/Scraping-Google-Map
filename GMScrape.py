@@ -61,7 +61,7 @@ def scrape_gm(api, src, dest, freq, duration):
 def main():
     api_key = input("Enter API key: ")
     origin = input("Enter Origin co-ordinates: ")
-    destination = intput("Enter Origin co-ordinates: ")
+    destination = input("Enter Origin co-ordinates: ")
     f = int(input('Enter Frequency in minutes: '))
     d = int(input('How long to scrape in hours: '))
     scrape_gm(api_key, origin, destination, f, d)
