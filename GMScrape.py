@@ -69,13 +69,25 @@ def scrape_gm(api, source, destination, freq, duration,fname):
     # open file
     with open(fname, 'w') as file:
         w = csv.writer(file)
+        
+        # temporary data for distances
+        temp_data = list()
+        distances = list()
+        for i in request_urls:
+            temp_data.append(json.loads(req_data_from_url(i)))
 
-        # number of destinations
+        # for each data take out distance of route
+        for i in temp_data:
+            distances.append((i['rows'][0]['elements'][0]['distance']['text']))
+
+        # number of sources
         dest_len = len(out)
         row = ['timestamp']
-        for i in range(dest_len):
-            row.append('travel_time(in mins): \n' + in_keys[0] + ' to ' + out_keys[i])
 
+        # Append route distance with route name
+        for i in range(dest_len):
+            row.append('travel_time(in mins): \n' + in_keys[0] + ' to ' + out_keys[i]+'('+distances[i]+')')
+        
         w.writerow(row)
         step = 1
         while (step <= int(duration * 60 / freq)):
@@ -120,6 +132,8 @@ def scrape_gm(api, source, destination, freq, duration,fname):
 def main():
     api_key = input('Enter API key: ')
     filename = (input('Enter CSV file name: '))+'.csv'
+    
+    # Origin and Destination node co-ordinates given here
     origin = {
         'Gulshan_1': '23.780622,90.425636',
     }
