@@ -103,7 +103,6 @@ def scrape_gm(api, source, destination, freq, duration,fname):
 
             # write batch list in rows in .csv
             w.writerow(batch)
-            print(batch)
 
             #prints steps after gathering 'freq' number of data points
             if (step % freq == 0):
