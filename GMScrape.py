@@ -74,7 +74,7 @@ def scrape_gm(api, source, destination, freq, duration,fname):
         dest_len = len(out)
         row = ['timestamp']
         for i in range(dest_len):
-            row.append('travel_time(in mins): ' + in_keys[0] + ' to ' + out_keys[i])
+            row.append('travel_time(in mins): \n' + in_keys[0] + ' to ' + out_keys[i])
 
         w.writerow(row)
         step = 1
