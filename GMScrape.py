@@ -120,7 +120,7 @@ def scrape_gm(api, source, destination, freq, duration,fname):
 # Main function
 def main():
     api_key = input('Enter API key: ')
-    filename = (input('Enter name for CSV file: '))+'.csv'
+    filename = (input('Enter CSV file name: '))+'.csv'
     origin = {
         'Gulshan_1': '23.780622,90.425636',
     }
@@ -139,8 +139,8 @@ def main():
         'Cantonment': '23.816430,90.405198',
         'Mirpur': '23.819824, 90.365092'
     }
-    f = int(input('Enter Frequency in minutes: '))
-    d = float(input('How long to scrape in hours: '))
+    f = int(input('Enter scrape frequency (in minutes): '))
+    d = float(input('Enter total scrape period (in hours): '))
     scrape_gm(api_key, origin, destination, f, d,filename)
 
 
