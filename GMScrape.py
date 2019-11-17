@@ -123,8 +123,6 @@ def scrape_gm(api, nodes, freq, duration, filename):
             start = time.time()
 
             # lists for data, traffic_times
-            progress = int((step / limit) * 100)
-            print('Progress: '+str(progress) + '%')
             data = list()
             traffic_times = list()
 
@@ -155,10 +153,12 @@ def scrape_gm(api, nodes, freq, duration, filename):
             end = time.time()
             elapsed = end - start
             # let program sleep for freq*60 seconds
-            if elapsed > freq * 60:
-                time.sleep(elapsed)
-            else:
+            if elapsed < freq * 60:
                 time.sleep(freq * 60)
+            
+            # Track progress
+            progress = int((step / limit) * 100)
+            print('Progress: '+str(progress) + '%')
 
 # Main function | Incomplete code
 def main():
