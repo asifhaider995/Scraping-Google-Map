@@ -1,5 +1,4 @@
 """Original code from https://github.com/ritvikmath/ScrapingData || Modified for use in Python3.x"""
-import pathlib
 
 import urllib3
 import json
@@ -8,7 +7,7 @@ import time
 import datetime
 
 from itertools import combinations
-from pathlib import Path
+
 
 
 # requests data from a single url
@@ -55,72 +54,53 @@ def get_urls(origin, destination, api):
     return url
 
 
-
-# Main Scrape_function, runs for bounded time 
 def scrape_gm(api, nodes, freq, duration, filename):
-    
-    # Action for file, default is write
-    action = 'w'
-    my_file = Path(filename)
-
-    # Checks if file is present or not
-    if (my_file.is_file() is False):
-        action = 'w'
-    else:
-        action = 'a'
-        
-    # Get keys from nodes
     locations = nodes.keys()
-
-    # Declare necessary lists
     in_keys = list()
     out_keys = list()
     src = list()
     out = list()
-
-    # Combinations of origins and destinations
-    for i in list(combinations(locations, 2)):
-        # Appending source and destination values
+    x = list(combinations(locations, 2))
+    for i in x:
         src.append(nodes[i[0]])
         out.append(nodes[i[1]])
-
-        # Appending source and destination keys
         in_keys.append(i[0])
         out_keys.append(i[1])
 
     # fetch request urls
     request_urls = get_urls(src, out, api)
-    
     # open file
-    with open(filename, action) as file:
+    with open(filename, 'a') as file:
         w = csv.writer(file)
         # Checks if action is write or append
-        if action == 'w':
-            # Temporary data for distances
-            temp_data = list()
-            distances = list()
-            for i in request_urls:
-                temp_data.append(json.loads(req_data_from_url(i)))
 
-            # for each data take out distance of route
-            for i in temp_data:
-                distances.append((i['rows'][0]['elements'][0]['distance']['text']))
-
-            # number of sources
-            dest_len = len(out)
-            row = ['timestamp']
-
-            # Append route distance with route name
-            for i in range(dest_len):
-                row.append('tr_time(min): \n' + in_keys[i] + ' to ' + out_keys[i] + '(' + distances[i] + ')')
-
-            # Write row to file
-            w.writerow(row)
+        # Temporary data for distances
+        temp_data = list()
+        distances = list()
+        for i in request_urls:
+            temp_data.append(json.loads(req_data_from_url(i)))
+        
+        # for each data take out distance of route
+        for i in temp_data:
+            distances.append((i['rows'][0]['elements'][0]['distance']['text']))
+        
+        # number of sources
+        _len = len(out)
+        row = ['timestamp']
+        
+        # Append route distance with route name
+        for i in range(_len):
+            row.append('tr_time(min): \n' + in_keys[i] + ' to ' + out_keys[i] + '(' + distances[i] + ')')
+        
+        # Write row to file
+        w.writerow(row)
         step = 1
         limit = int(duration * 60 / freq)
         while step <= limit:
             # timer
             start = time.time()
+            progress = int((step / limit) * 100)
+            print('Progress: ' + str(progress) + '%')
 
             # lists for data, traffic_times
             data = list()
@@ -155,12 +135,9 @@ def scrape_gm(api, nodes, freq, duration, filename):
             # let program sleep for freq*60 seconds
             if elapsed < freq * 60:
                 time.sleep(freq * 60)
-            
-            # Track progress
-            progress = int((step / limit) * 100)
-            print('Progress: '+str(progress) + '%')
 
-# Main function | Incomplete code
+
+# Main function
 def main():
     # All nodes
     all_nodes = {
@@ -184,7 +161,7 @@ def main():
     f = 10 # Minutes
     d = float(input('Enter Scrape period in hours: '))
     scrape_gm(api_key, all_nodes, f, d, filename)
-
+    
 
 if __name__ == '__main__':
     main()
