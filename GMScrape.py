@@ -1,5 +1,6 @@
 """Original code from https://github.com/ritvikmath/ScrapingData || Modified for use in Python3.x"""
 
+import os
 import urllib3
 import json
 import csv
@@ -7,7 +8,6 @@ import time
 import datetime
 
 from itertools import combinations
-
 
 
 # requests data from a single url
@@ -31,7 +31,7 @@ def req_data_from_url(url):
     return req.data
 
 
-# function to return a list of URLS
+# function to gernerate list of URLS
 def get_urls(origin, destination, api):
     # scraping googlemaps website
     site = 'https://maps.googleapis.com/maps/api/'
@@ -54,59 +54,79 @@ def get_urls(origin, destination, api):
     return url
 
 
+# Function to check if file exists
+def file_is_empty(file):
+    if os.path.exists(file):
+        return os.path.getsize(file) > 0
+    else:
+        return False
+
+# Function to generate CSV header
+def get_csv_header(urls, in_keys, out_keys):
+    print('Getting Header...')
+    temp_data = list()
+    distances = list()
+    for i in urls:
+        temp_data.append(json.loads(req_data_from_url(i)))
+
+    # for each data take out distance of route
+    for i in temp_data:
+        distances.append((i['rows'][0]['elements'][0]['distance']['text']))
+
+    # number of sources
+    _len = len(out_keys)
+    row = ['timestamp']
+
+    # Append route distance with route name
+    for i in range(_len):
+        row.append('tr_time(min): \n' + in_keys[i] + ' to ' + out_keys[i] + '(' + distances[i] + ')')
+
+    # Write row to file
+    return row
+
+
+# Main Scrape_function, runs for bounded time ||| Not yet tested
 def scrape_gm(api, nodes, freq, duration, filename):
     locations = nodes.keys()
-    in_keys = list()
-    out_keys = list()
+    src_keys = list()
+    dest_keys = list()
     src = list()
     out = list()
-    x = list(combinations(locations, 2))
-    for i in x:
+    comb = list(combinations(locations, 2))
+    for i in comb:
         src.append(nodes[i[0]])
         out.append(nodes[i[1]])
-        in_keys.append(i[0])
-        out_keys.append(i[1])
+        src_keys.append(i[0])
+        dest_keys.append(i[1])
 
     # fetch request urls
     request_urls = get_urls(src, out, api)
-    # open file
-    with open(filename, 'a') as file:
-        w = csv.writer(file)
-        # Checks if action is write or append
 
-        # Temporary data for distances
-        temp_data = list()
-        distances = list()
-        for i in request_urls:
-            temp_data.append(json.loads(req_data_from_url(i)))
-        
-        # for each data take out distance of route
-        for i in temp_data:
-            distances.append((i['rows'][0]['elements'][0]['distance']['text']))
-        
-        # number of sources
-        _len = len(out)
-        row = ['timestamp']
-        
-        # Append route distance with route name
-        for i in range(_len):
-            row.append('tr_time(min): \n' + in_keys[i] + ' to ' + out_keys[i] + '(' + distances[i] + ')')
-        
-        # Write row to file
-        w.writerow(row)
+    # Checks if file exists and is empty
+    if file_is_empty(filename):
+        action = 'a'
+    else:
+        action = 'w'
+    # open file
+    with open(filename, action) as file:
+        w = csv.writer(file)
+        if action == 'w':
+            header = get_csv_header(request_urls, src_keys, dest_keys)
+            print('Writing Header...')
+            # Write header
+            w.writerow(header)
         step = 1
         limit = int(duration * 60 / freq)
         while step <= limit:
             # timer
             start = time.time()
-            progress = int((step / limit) * 100)
-            print('Progress: ' + str(progress) + '%')
 
             # lists for data, traffic_times
             data = list()
             traffic_times = list()
 
             # appends all data unloaded by json in list
+            print('Getting Data...')
             for i in request_urls:
                 data.append(json.loads(req_data_from_url(i)))
 
@@ -132,12 +152,14 @@ def scrape_gm(api, nodes, freq, duration, filename):
 
             end = time.time()
             elapsed = end - start
+            progress = int((step / limit) * 100)
+            print('Progress: ' + str(progress) + '%')
+
             # let program sleep for freq*60 seconds
             if elapsed < freq * 60:
                 time.sleep(freq * 60)
 
-
-# Main function
+# Main function 
 def main():
     # All nodes
     all_nodes = {
@@ -156,12 +178,12 @@ def main():
         'C': '23.816430,90.405198',  # Dhaka Cantonment
         'M11': '23.819824, 90.365092'  # Mirpur
     }
-    api_key = input('Enter API key: ')
-    filename = 'Log'+str(datetime.date.today())+'.csv'
-    f = 10 # Minutes
-    d = float(input('Enter Scrape period in hours: '))
+    api_key = 'input('Enter API Key: ')
+    filename = 'Log' + str(datetime.date.today()) + '.csv'
+    f = 10 # Scrapping frequency in minutes
+    d = float(input('Enter Scrape period in hours: ')) # Scrapping period
     scrape_gm(api_key, all_nodes, f, d, filename)
-    
+
 
 if __name__ == '__main__':
     main()
